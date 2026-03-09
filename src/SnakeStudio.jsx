@@ -137,6 +137,7 @@ export default function SnakeStudio() {
   const [activePU, setActivePU]       = useState([]);
   const [achievement, setAchievement] = useState(null);
   const [shieldActive, setShieldActive] = useState(false);
+  const [countdown, setCountdown]       = useState(null); // null | "READY" | "3" | "2" | "1" | "GO!"
 
   const canvasRef  = useRef(null);
   const gameRef    = useRef(null);
@@ -242,12 +243,34 @@ export default function SnakeStudio() {
       }
     }
 
-    if ((!teleported && (head.x<0||head.x>=GRID||head.y<0||head.y>=GRID)) ||
-        g.snake.some(s=>cellEq(s,head)) || g.obstacles.some(o=>cellEq(o,head))) {
+    const wallHit = !teleported && (head.x<0||head.x>=GRID||head.y<0||head.y>=GRID);
+    const selfHit = g.snake.some(s=>cellEq(s,head));
+    const obsHit  = g.obstacles.some(o=>cellEq(o,head));
+
+    if (wallHit || selfHit || obsHit) {
       if (g.activePowerups.shield) {
-        delete g.activePowerups.shield; setShieldActive(false); toast("🛡 Shield absorbed hit!"); return;
+        delete g.activePowerups.shield; setShieldActive(false); toast("🛡 Shield absorbed hit!");
+        // Wall hit: wrap to opposite side so snake keeps moving safely
+        if (wallHit) {
+          head.x = (head.x + GRID) % GRID;
+          head.y = (head.y + GRID) % GRID;
+        } else {
+          // Obstacle or self hit: reverse direction so snake bounces away
+          // and resets accumulator to give player time to react
+          // Obstacle hit: just pass through (don't return, let snake continue)
+          // Self hit: reverse so snake bounces away
+          if (selfHit) {
+            const rev = { x: -g.dir.x, y: -g.dir.y };
+            g.dir = rev;
+            g.nextDir = rev;
+            g.accumulator = 0;
+            return;
+          }
+          // obsHit: fall through and keep moving into that cell
+        }
+      } else {
+        endGame(); return;
       }
-      endGame(); return;
     }
 
     g.snake.unshift(head);
@@ -419,8 +442,37 @@ export default function SnakeStudio() {
     return()=>{window.removeEventListener("touchstart",onTS);window.removeEventListener("touchend",onTE);};
   },[]);
 
-  function startGame(){initGame();setScreen("playing");}
-  function resume(){if(!gameRef.current)return;gameRef.current.running=true;gameRef.current.lastTimestamp=null;setScreen("playing");}
+  function runCountdown(steps, onDone) {
+    let i = 0;
+    setCountdown(steps[0]);
+    const iv = setInterval(() => {
+      i++;
+      if (i < steps.length) {
+        setCountdown(steps[i]);
+      } else {
+        clearInterval(iv);
+        setCountdown(null);
+        onDone();
+      }
+    }, 800);
+  }
+
+  function startGame() {
+    initGame();
+    setScreen("countdown");
+    runCountdown(["READY", "3", "2", "1", "GO!"], () => setScreen("playing"));
+  }
+
+  function resume() {
+    if (!gameRef.current) return;
+    setScreen("countdown");
+    runCountdown(["3", "2", "1", "GO!"], () => {
+      if (!gameRef.current) return;
+      gameRef.current.running = true;
+      gameRef.current.lastTimestamp = null;
+      setScreen("playing");
+    });
+  }
   const skinUnlocked=(k)=>highScore>=SKINS[k].unlockAt;
 
   function pressDir(nd){const g=gameRef.current;if(!g)return;if(nd.x!==-g.dir.x||nd.y!==-g.dir.y)g.nextDir=nd;}
@@ -450,6 +502,23 @@ export default function SnakeStudio() {
   `;
 
   const wrap={minHeight:"100vh",background:"radial-gradient(ellipse 90% 60% at 50% 0%,#081508 0%,#05050c 55%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px",fontFamily:"'Share Tech Mono',monospace",color:"#c8ffc8",overflowX:"hidden"};
+
+  if(screen==="countdown") return(
+    <div style={{...wrap,justifyContent:"center"}}>
+      <style>{CSS}</style>
+      <div style={{
+        fontFamily:"'Orbitron',monospace",
+        fontSize: countdown==="READY" ? "clamp(32px,10vw,52px)" : countdown==="GO!" ? "clamp(48px,14vw,80px)" : "clamp(72px,20vw,120px)",
+        color: countdown==="GO!" ? "#00ff88" : countdown==="READY" ? "#888888" : "#ffffff",
+        textShadow: countdown==="GO!" ? "0 0 40px #00ff88, 0 0 80px #00ff4488" : countdown==="READY" ? "none" : "0 0 30px #ffffff88",
+        letterSpacing: countdown==="READY" ? 8 : 4,
+        animation: "slideIn 0.3s ease",
+        userSelect: "none",
+      }}>
+        {countdown}
+      </div>
+    </div>
+  );
 
   if(screen==="menu") return(
     <div style={wrap}>
