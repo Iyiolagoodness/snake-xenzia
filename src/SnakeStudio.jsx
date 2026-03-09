@@ -12,7 +12,7 @@ const FOOD_TYPES = [
   { type: "normal", emoji: "🍎", color: "#ff4455", glow: "#ff2244", points: 10,  weight: 60 },
   { type: "rare",   emoji: "🍇", color: "#bb44ff", glow: "#9922ff", points: 50,  weight: 15 },
   { type: "bomb",   emoji: "💣", color: "#888899", glow: "#555566", points: -20, weight: 10 },
-  { type: "time",   emoji: "⏰",  color: "#44aaff", glow: "#2288ff", points: 5,   weight: 15 },
+  { type: "time",   emoji: "⏱",  color: "#44aaff", glow: "#2288ff", points: 5,   weight: 15 },
 ];
 const POWERUP_TYPES = [
   { type: "speed",  emoji: "⚡", color: "#ffdd00", label: "Speed Boost!",   duration: 5000 },
@@ -442,8 +442,10 @@ export default function SnakeStudio() {
     .hud{background:#060d06;border:1px solid #142414;border-radius:6px;padding:5px 10px;text-align:center;}
     .hud-l{font-size:clamp(8px,2vw,9px);letter-spacing:2px;color:#336633;font-family:'Share Tech Mono',monospace;}
     .hud-v{font-size:clamp(15px,4vw,20px);font-weight:bold;font-family:'Orbitron',monospace;}
-    .dpad-btn{width:clamp(44px,12vw,56px);height:clamp(44px,12vw,56px);background:#0a1a0a;border:1px solid #2a4a2a;border-radius:8px;color:#88ff88;font-size:clamp(16px,5vw,22px);cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:manipulation;}
-    .dpad-btn:active{background:#0f2a0f;border-color:#44ff44;}
+    .dpad{padding:12px 0 8px;}
+    .dpad-btn{width:clamp(64px,18vw,80px);height:clamp(64px,18vw,80px);background:#0d1f0d;border:2px solid #2a5a2a;border-radius:16px;color:#66ee66;font-size:clamp(22px,7vw,30px);cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:manipulation;box-shadow:0 4px 12px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.06);}
+    .dpad-btn:active{background:#162a16;border-color:#44ff44;color:#fff;transform:scale(0.93);}
+    .dpad-pause{width:clamp(54px,15vw,68px);height:clamp(54px,15vw,68px);background:#0a140a;border:2px solid #1a3a1a;border-radius:50%;color:#336633;font-size:clamp(18px,5vw,24px);}
     @media (hover:hover) and (pointer:fine){.dpad{display:none !important;}}
   `;
 
@@ -556,11 +558,11 @@ export default function SnakeStudio() {
       </div>
 
       {/* D-Pad */}
-      <div className="dpad" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,marginTop:12}}>
+      <div className="dpad" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
         <button className="dpad-btn" onTouchStart={(e)=>{e.preventDefault();pressDir({x:0,y:-1});}} onClick={()=>pressDir({x:0,y:-1})}>▲</button>
-        <div style={{display:"flex",gap:4}}>
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <button className="dpad-btn" onTouchStart={(e)=>{e.preventDefault();pressDir({x:-1,y:0});}} onClick={()=>pressDir({x:-1,y:0})}>◄</button>
-          <button className="dpad-btn" style={{fontSize:"clamp(13px,4vw,16px)",color:"#336633"}}
+          <button className="dpad-btn dpad-pause"
             onTouchStart={(e)=>{e.preventDefault();if(gameRef.current)gameRef.current.running=false;cancelAnimationFrame(animRef.current);setScreen("paused");}}
             onClick={()=>{if(gameRef.current)gameRef.current.running=false;cancelAnimationFrame(animRef.current);setScreen("paused");}}>⏸</button>
           <button className="dpad-btn" onTouchStart={(e)=>{e.preventDefault();pressDir({x:1,y:0});}} onClick={()=>pressDir({x:1,y:0})}>►</button>
