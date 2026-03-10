@@ -12,7 +12,7 @@ const FOOD_TYPES = [
   { type: "normal", emoji: "🍎", color: "#ff4455", glow: "#ff2244", points: 10,  weight: 60 },
   { type: "rare",   emoji: "🍇", color: "#bb44ff", glow: "#9922ff", points: 50,  weight: 15 },
   { type: "bomb",   emoji: "💣", color: "#888899", glow: "#555566", points: -20, weight: 10 },
-  { type: "time",   emoji: "⏱",  color: "#44aaff", glow: "#2288ff", points: 5,   weight: 15 },
+  { type: "time",   emoji: "⏰",  color: "#44aaff", glow: "#2288ff", points: 5,   weight: 15 },
 ];
 const POWERUP_TYPES = [
   { type: "speed",  emoji: "⚡", color: "#ffdd00", label: "Speed Boost!",   duration: 5000 },
